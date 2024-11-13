@@ -5,114 +5,71 @@
  * @format
  */
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
+import React, {useRef, useState} from 'react';
 import {
+  Button,
   SafeAreaView,
-  ScrollView,
   StatusBar,
-  StyleSheet,
   Text,
   useColorScheme,
-  View,
 } from 'react-native';
 
+import {Colors} from 'react-native/Libraries/NewAppScreen';
 import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
+  CircularCarousel,
+  CircularCarouselRef,
+} from './src/components/CircularCarousel';
+import {data, DataType} from './src/data';
 
 function App(): React.JSX.Element {
+  const carouselRef = useRef<CircularCarouselRef | null>(null);
+  const [selectedItem, setSelectedItem] = useState<DataType | null>(null);
+  const [preSelectedItemIndex, setPreSelectedItemIndex] = useState<number>(0);
+
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
+  const handleClose = () => {
+    console.log('handleClose');
+    carouselRef.current?.collapse();
+  };
+
+  const handleOpen = () => {
+    console.log('handleOpen');
+    carouselRef.current?.expand();
+  };
+  console.log('render');
   return (
-    <SafeAreaView style={backgroundStyle}>
+    <SafeAreaView style={[{flex: 1}, backgroundStyle]}>
       <StatusBar
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
         backgroundColor={backgroundStyle.backgroundColor}
       />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
+
+      {selectedItem && <Text>Selected Item: {selectedItem.id}</Text>}
+      {preSelectedItemIndex >= 0 && (
+        <Text>PRE Selected Item: {preSelectedItemIndex}</Text>
+      )}
+
+      <Button title="Open Carousel" onPress={handleOpen} />
+
+      <CircularCarousel
+        preSelectedItemIndex={preSelectedItemIndex}
+        ref={carouselRef}
+        setPreSelectedItemIndex={item => {
+          setPreSelectedItemIndex(item);
+        }}
+        onBackdropPress={handleClose}
+        setSelectedItem={item => {
+          setSelectedItem(item);
+        }}
+        data={data}
+      />
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
 
 export default App;
